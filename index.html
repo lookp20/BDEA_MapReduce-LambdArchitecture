@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <p></p></br>
+    <h1>{% block title %} Let's create a TagCloud {% endblock %}</h1>
+    <p></p></br>
+
+
+    <form action='/' method=post enctype=multipart/form-data>
+        <input type=file name=file>
+        <input type=submit value=Hochladen>
+    </form>    
+    <p></p></br>
+    <form action="/create_WordCloud_direct" method="post"> 
+        <input type="submit" value="TagCloud erstellen" >
+        <center><image src="{{img}}"></center>
+    </form>
+  
+    
+{% endblock %}
