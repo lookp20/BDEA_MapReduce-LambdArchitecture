@@ -66,10 +66,19 @@ def create_WordCloud_direct():
                 if filename.startswith(text_path+'/') and filename.endswith('.txt'):
                     file_name = filename[len(text_path+'/'):-4]
             img = os.path.join(app.config['UPLOAD_FOLDER'], file_name+'.png')
-            #subprocess.call("./text_collection.sh", shell=True)
-            #subprocess.call('./image_collection.sh', shell=True)
             return render_template('index.html', img=img)
     return render_template('index.html')
+
+@app.route('/upload_to_hdfs', methods=['GET', 'POST'])
+def upload_to_hdfs():
+    if request.method == 'POST':
+        if os.listdir(text_folder) or os.listdir(app.config['UPLOAD_FOLDER']):
+            subprocess.call("./text_collection.sh", shell=True)
+            subprocess.call('./image_collection.sh', shell=True)
+            return redirect(url_for('create_WordCloud_direct'))
+        else:
+            return redirect(url_for('create_WordCloud_direct'))
+    return redirect(url_for('create_WordCloud_direct'))
 
 @app.route('/image')
 def image_collection():
