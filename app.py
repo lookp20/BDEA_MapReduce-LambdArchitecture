@@ -8,10 +8,13 @@ matplotlib.use('Agg')
 import glob
 import numpy as np
 import subprocess
+import shutil
+import random
 
 text_folder = '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/text_collection'
 extensions = set(['txt', 'pdf', 'docx'])
 text_path = '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/text_collection'
+
 
 app = Flask(__name__)
 
@@ -34,14 +37,12 @@ def create_wordcloud_DIRECT(text_Path):
     stopwords.update(['der', 'die', 'das', 'und', 'dass', 'nicht'])
 
     # lower max_font_size, change the maximum number of word and lighten the background:
-    wordcloud = WordCloud(stopwords=stopwords,width=1900, height=1000, max_font_size=100, max_words=200, background_color="white").generate(text)
+    wordcloud = WordCloud(stopwords=stopwords,width=400, height=300, max_font_size=100, max_words=200, background_color="white").generate(text)
     plt.figure()
     plt.imshow(wordcloud, interpolation="bilinear")
     plt.axis("off")
     return plt.savefig('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/images/'+file_name+'.png')
     
-
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -53,8 +54,12 @@ def index():
         if allowed_extensions(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(text_folder, filename))
+            if not os.path.exists('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/text_library/'+filename+'.txt'):
+                shutil.copy(text_folder+'/'+filename, '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/text_library')
+            else:
+                shutil.copy(text_folder+'/'+filename, '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/text_library/'+filename+str(random.randint(0, 100))+'.txt') 
             return redirect(request.url), create_wordcloud_DIRECT(text_path)
-    return render_template('index.html')
+    return render_template('index_alt.html')
 
 @app.route('/create_WordCloud_direct', methods=['GET', 'POST'])
 def create_WordCloud_direct():
@@ -65,9 +70,13 @@ def create_WordCloud_direct():
             for filename in glob.glob(os.path.join(text_path, '*.txt')):   
                 if filename.startswith(text_path+'/') and filename.endswith('.txt'):
                     file_name = filename[len(text_path+'/'):-4]
-            img = os.path.join(app.config['UPLOAD_FOLDER'], file_name+'.png')
-            return render_template('index.html', img=img)
-    return render_template('index.html')
+            img = os.path.join(app.config['UPLOAD_FOLDER'], file_name+'.png')   
+            if not os.path.exists('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/Gallery/'+file_name+'.png'):
+                shutil.copy(img, '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/Gallery')
+            else:
+                shutil.copy(img, '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/Gallery/'+file_name+str(random.randint(0, 100))+'.png') 
+            return render_template('index_alt.html', img=img)
+    return render_template('index_alt.html')
 
 @app.route('/upload_to_hdfs', methods=['GET', 'POST'])
 def upload_to_hdfs():
@@ -77,12 +86,15 @@ def upload_to_hdfs():
             subprocess.call('./image_collection.sh', shell=True)
             return redirect(url_for('create_WordCloud_direct'))
         else:
-            return redirect(url_for('create_WordCloud_direct'))
-    return redirect(url_for('create_WordCloud_direct'))
+            return render_template('index_alt.html')
+    return render_template('index_alt.html')
+
 
 @app.route('/image')
 def image_collection():
-    return render_template('image_collection.html')
+    gallery = os.listdir('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/Gallery')
+    print(gallery)
+    return render_template('image_collection.html', gallery=gallery)
 
 
 @app.route('/text')
