@@ -1,3 +1,4 @@
+##### reducer2.py beinhaltet die Dokumentenfrequenz und liefert ein absteigend sortiertes und normalisiertes Ergebnis ################
 import sys
 import operator
 import os
