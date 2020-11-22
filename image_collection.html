@@ -2,7 +2,12 @@
 
 {% block content %}
     <p></p></br>
-    <h1>{% block title %} Übersicht {% endblock %}</h1>
+    <h1>{% block title %} Galerie {% endblock %}</h1>
     <p></p></br>
+    <form action="/image" method="get" style="float:left;display:inline">
+    {% for image in img %}
+    <image src="{{url_for('static', filename='Gallery/'+image)}}" style="padding:10px"></image>
+    {% endfor %}
+    </form>
 
 {% endblock %}
