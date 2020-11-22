@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <p></p></br>
+    <h1>{% block title %} TagCloud für ein Dokument {% endblock %}</h1>
+    <p></p></br>
+    <form action="/Document_TagCloud" method="POST">
+        <input name="text">
+        <input type="submit">
+    </form>
+    <form action="/Display_TagCloud" method="post" style="float:left;display:inline">
+    <input type="submit" value="TagCloud erstellen" style=" background-color: lightblue; border: none;  color: white;  padding: 16px 32px;
+    text-decoration: none;   margin: 4px 2px;   border-radius: 10px;   cursor: pointer;">
+    <p></p>
+    {% for img in img_BATCH %}
+        <center><image src="{{url_for('static', filename='img_for_BATCH/'+img)}}" style="padding:10px"></center>
+    {% endfor %}
+    </form>
+{% endblock %}
