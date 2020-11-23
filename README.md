@@ -13,4 +13,20 @@ Die komplette Applikation verwendet einen Docker Container (Cloudera Quickstart)
 Im folgenden Abschnitt werden Bilder der Applikation dargestellt.
 
 # Startseite
-![alt text](https://github.com/[lookp20]/[BDEA_MapReduce-LambdArchitecture]/blob/[master]/Home_screenshot.png)
+![Home](Home_screenshot.png)
+
+# Starteite mit TagCloud
+![Home TagCloud](Home_TagCloud_screenshot.png)
+
+# Image Collection
+![Image Collection](ImageCollection.png)
+
+# Text Collection
+![Text Collection](TextCollection_HDFS.png)
+
+# Normalisierte TagCloud für ein Dokument
+![Norm. TagCloud](TagCloud_Batch.png)
+
+# Normalisierte TagCloud für alle Dokumente
+![Norm.2 TagCloud](TagCloud_Korpus.png)
+
