@@ -317,9 +317,9 @@ def Display_TagCloud_KORPUS():
     if request.method == 'POST':
         img_KORPUS = os.listdir('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_KORPUS')
         if not os.path.exists('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_KORPUS/text.png'):
-            shutil.copy('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_BATCH/text.png', '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/Gallery')
+            shutil.copy('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_KORPUS/text.png', '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/Gallery')
         else:
-            shutil.copy('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_BATCH/text.png', '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/Gallery/text'+str(random.randint(0, 100))+'.png') 
+            shutil.copy('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_KORPUS/text.png', '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/Gallery/text'+str(random.randint(0, 100))+'.png') 
         os.chmod('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/delete_KORPUS.sh', 0o775)
         subprocess.call('./delete_KORPUS.sh', shell=True)
         return render_template('Korpus_TagCloud.html', img_KORPUS=img_KORPUS)
