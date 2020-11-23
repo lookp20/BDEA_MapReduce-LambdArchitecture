@@ -16,6 +16,7 @@ text_folder = '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/text
 extensions = set(['txt', 'pdf', 'docx'])
 text_path = '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/text_collection'
 text_path_BATCH = '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/text_for_wc_BATCH'
+text_path_KORPUS = '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/text_for_wc_KORPUS'
 
 
 app = Flask(__name__)
@@ -62,6 +63,24 @@ def create_wordcloud_BATCH(text_path_BATCH):
     plt.imshow(wordcloud, interpolation="bilinear")
     plt.axis("off")
     return plt.savefig('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_BATCH/'+file_name+'.png')
+
+def create_wordcloud_KORPUS(text_path_KORPUS):
+    for filename in glob.glob(os.path.join(text_path_KORPUS, '*.txt')):
+        with open(os.path.join(os.getcwd(), filename), 'r') as file:
+            text = file.read()
+    # save the name
+    if filename.startswith(text_path_KORPUS+'/') and filename.endswith('.txt'):
+        file_name = filename[len(text_path_BATCH+'/'):-4]
+    # Create stopword list:
+    stopwords = set(STOPWORDS)
+    stopwords.update(['der', 'die', 'das', 'und', 'dass', 'nicht'])
+
+    # lower max_font_size, change the maximum number of word and lighten the background:
+    wordcloud = WordCloud(stopwords=stopwords,width=400, height=300, max_font_size=100, max_words=500, background_color="white").generate(text)
+    plt.figure()
+    plt.imshow(wordcloud, interpolation="bilinear")
+    plt.axis("off")
+    return plt.savefig('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_KORPUS/'+file_name+'.png')
 
 def clean(word):
     word = word.replace('\xc3\x84', 'ae')
@@ -142,7 +161,64 @@ def normalize_doc():
     a.write(text_list)
     a.close()
     return a
-  
+def norm_Korpus():
+    z = {}
+    delete = {}
+    filename = []
+    for i in os.listdir("/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/output"):
+        if i.startswith("part-"):
+            filename += [i]
+    with open("/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/output/PART.txt","w") as file:
+        for name in filename:
+            with open("/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/output/"+name) as infile:
+                for line in infile:
+                    file.write(line)
+    for i in os.listdir("/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/output"):
+        if i.startswith("PART.txt"):
+            with open("/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/output/"+i,"r") as file:
+                    output = file.read()
+                    output = output.replace('\t', '":')
+                    output = output.replace('\n', ',"')
+                    output = '{"'+output+'}'
+                    output = output.replace(',"}', '}')
+                    output = json.loads(output)
+                    sorted_dict = sorted(output.items(), key=operator.itemgetter(1) ,reverse=True)
+                    for a in os.listdir('./static/text_library'):
+                        with open("/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/text_library/"+a,"r") as file:
+                            for_text = file.read()
+                            for_text = for_text.lower()
+                            for_text = clean_python3(for_text)
+                            for i in range(len(sorted_dict)):
+                                if sorted_dict[i][0] in for_text:
+                                    if sorted_dict[i][0] in z:
+                                        z[sorted_dict[i][0]] += 1
+                                    else:
+                                        z[sorted_dict[i][0]] = 1
+
+                    for i in output.keys():
+                        if i in z.keys():
+                            True
+                        else:
+                            delete.update({i:output[i]})
+    for i in delete.keys():
+        if i in output.keys():
+            del output[i]
+        else:
+            True
+    normcount = {}
+    for key in output:
+        normcount.update({key:int(output[key]/z[key])})
+        sorted_dict_norm = sorted(normcount.items(), key=operator.itemgetter(1))
+        sorted_dict_norm.reverse()
+    text_list = ''
+    for i in range(len(sorted_dict_norm)):
+        text_list +=(sorted_dict_norm[i][0] + ' ')*sorted_dict_norm[i][1]
+    a = open("/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/text_for_wc_batch/text.txt", "w")
+    a.write(text_list)
+    a.close()
+    return a
+
+
     
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -218,12 +294,35 @@ def Document_TagCloud():
 def Display_TagCloud():
     if request.method == 'POST':
         img_BATCH = os.listdir('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_BATCH')
+        if not os.path.exists('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_BATCH/text.png'):
+            shutil.copy('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_BATCH/text.png', '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/Gallery')
+        else:
+            shutil.copy('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_BATCH/text.png', '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/Gallery/text'+str(random.randint(0, 100))+'.png') 
+        os.chmod('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/delete_BATCH.sh', 0o775)
+        subprocess.call('./delete_BATCH.sh', shell=True)
         return render_template('Dokumenten_TagCloud.html', img_BATCH=img_BATCH)
     return render_template('Dokumenten_TagCloud.html')
 
 
-@app.route('/Korpus_TagCloud')
+@app.route('/Korpus_TagCloud', methods=['GET', 'POST'])
 def Korpus_TagCloud():
+    if request.method == 'POST':
+        os.chmod('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/MapReduce_Job.sh', 0o775)
+        subprocess.call('./MapReduce_Job.sh', shell=True)
+        norm_Korpus()
+    return render_template('Korpus_TagCloud.html'), create_wordcloud_KORPUS(text_path_KORPUS)
+
+@app.route('/Display_TagCloud_KORPUS', methods=['GET', 'POST'])
+def Display_TagCloud_KORPUS():
+    if request.method == 'POST':
+        img_KORPUS = os.listdir('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_KORPUS')
+        if not os.path.exists('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_KORPUS/text.png'):
+            shutil.copy('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_BATCH/text.png', '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/Gallery')
+        else:
+            shutil.copy('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_BATCH/text.png', '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/Gallery/text'+str(random.randint(0, 100))+'.png') 
+        os.chmod('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/delete_KORPUS.sh', 0o775)
+        subprocess.call('./delete_KORPUS.sh', shell=True)
+        return render_template('Korpus_TagCloud.html', img_KORPUS=img_KORPUS)
     return render_template('Korpus_TagCloud.html')
 
 if __name__ == '__main__':
