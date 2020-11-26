@@ -50,10 +50,10 @@ def create_wordcloud_BATCH(text_path_BATCH):
     for filename in glob.glob(os.path.join(text_path_BATCH, '*.txt')):
         with open(os.path.join(os.getcwd(), filename), 'r') as file:
             text = file.read()
-    # save the name
+                # save the name
     if filename.startswith(text_path_BATCH+'/') and filename.endswith('.txt'):
         file_name = filename[len(text_path_BATCH+'/'):-4]
-    # Create stopword list:
+    # Create stopword list
     stopwords = set(STOPWORDS)
     stopwords.update(['der', 'die', 'das', 'und', 'dass', 'nicht'])
 
@@ -119,7 +119,7 @@ def clean_python3(word):
 
 def MR_OneDoc(Doc):
     cmd = Doc
-    finalcmd = '#!/bin/bash\n'+'docker exec -t 4c0d173b1e74 hdfs dfs -rm -r /user/history/output1\n'+'docker exec -t 4c0d173b1e74 rm -r /src/output1\n'+'rm -r /Users/lookphanthavong/Documents/VisualStudioCode/BDEA/output1\n'+'docker exec -t 4c0d173b1e74 hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming-2.6.0-cdh5.7.0.jar -D mapreduce.job.ubertask.enable=true -file /src/mapper2.py -mapper "python mapper2.py" -file /src/reducer.py  -reducer "python reducer.py" -input /user/history/Flask_textcollection/'+cmd+' -output /user/history/output1\n'+'docker exec -t 4c0d173b1e74 hdfs dfs -get /user/history/output1 /src\n'+'docker cp 4c0d173b1e74:/src/output1 /Users/lookphanthavong/Documents/VisualStudioCode/BDEA\n'+'for file in /Users/lookphanthavong/Documents/VisualStudioCode/BDEA/output/output1/part*; do mv "$file" "${file%.exec}.txt"; done'
+    finalcmd = '#!/bin/bash\n'+'docker exec -t 10fff88fa6a9 hdfs dfs -rm -r /user/history/output1\n'+'docker exec -t 10fff88fa6a9 rm -r /src/output1\n'+'rm -r /Users/lookphanthavong/Documents/VisualStudioCode/BDEA/output1\n'+'docker exec -t 10fff88fa6a9 hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming-2.6.0-cdh5.7.0.jar -D mapreduce.job.ubertask.enable=true -file /src/mapper2.py -mapper "python mapper2.py" -file /src/reducer.py  -reducer "python reducer.py" -input /user/history/Flask_textcollection/'+cmd+' -output /user/history/output1\n'+'docker exec -t 10fff88fa6a9 hdfs dfs -get /user/history/output1 /src\n'+'docker cp 10fff88fa6a9:/src/output1 /Users/lookphanthavong/Documents/VisualStudioCode/BDEA\n'+'for file in /Users/lookphanthavong/Documents/VisualStudioCode/BDEA/output/output1/part*; do mv "$file" "${file%.exec}.txt"; done'
     bash_text = open('MapReduce_OneDoc_Job.sh', 'w')
     bash_text.write(finalcmd)
     bash_text.close()
@@ -151,7 +151,7 @@ def normalize_doc():
                         z[sorted_dict[i][0]] = 1
     normcount = {}
     for key in output:
-        normcount.update({key:output[key]/z[key]})
+        normcount.update({key:int(output[key]/z[key])})
         sorted_dict_norm = sorted(normcount.items(), key=operator.itemgetter(1))
         sorted_dict_norm.reverse()
     text_list = ''
@@ -217,8 +217,6 @@ def norm_Korpus():
     a.write(text_list)
     a.close()
     return a
-
-
     
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -288,7 +286,9 @@ def Document_TagCloud():
         os.chmod('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/MapReduce_OneDoc_Job.sh', 0o775)
         subprocess.call('./MapReduce_OneDoc_Job.sh', shell=True)
         normalize_doc()
-    return render_template('Dokumenten_TagCloud.html'), create_wordcloud_BATCH(text_path_BATCH)
+        return render_template('Dokumenten_TagCloud.html'), create_wordcloud_BATCH(text_path_BATCH)
+    return render_template('Dokumenten_TagCloud.html')
+
 
 @app.route('/Display_TagCloud', methods=['GET', 'POST'])
 def Display_TagCloud():
@@ -299,9 +299,8 @@ def Display_TagCloud():
         else:
             shutil.copy('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_BATCH/text.png', '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/Gallery/text'+str(random.randint(0, 100))+'.png') 
         os.chmod('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/delete_BATCH.sh', 0o775)
-        subprocess.call('./delete_BATCH.sh', shell=True)
         return render_template('Dokumenten_TagCloud.html', img_BATCH=img_BATCH)
-    return render_template('Dokumenten_TagCloud.html')
+    return render_template('Dokumenten_TagCloud.html'), subprocess.call('./delete_BATCH.sh', shell=True)
 
 
 @app.route('/Korpus_TagCloud', methods=['GET', 'POST'])
@@ -310,7 +309,8 @@ def Korpus_TagCloud():
         os.chmod('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/MapReduce_Job.sh', 0o775)
         subprocess.call('./MapReduce_Job.sh', shell=True)
         norm_Korpus()
-    return render_template('Korpus_TagCloud.html'), create_wordcloud_KORPUS(text_path_KORPUS)
+        return render_template('Korpus_TagCloud.html'), create_wordcloud_KORPUS(text_path_KORPUS)
+    return render_template('Korpus_TagCloud.html')
 
 @app.route('/Display_TagCloud_KORPUS', methods=['GET', 'POST'])
 def Display_TagCloud_KORPUS():
@@ -321,9 +321,9 @@ def Display_TagCloud_KORPUS():
         else:
             shutil.copy('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/img_for_KORPUS/text.png', '/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/static/Gallery/text'+str(random.randint(0, 100))+'.png') 
         os.chmod('/Users/lookphanthavong/Documents/VisualStudioCode/BDEA/flask/delete_KORPUS.sh', 0o775)
-        subprocess.call('./delete_KORPUS.sh', shell=True)
+        #subprocess.call('./delete_KORPUS.sh', shell=True)
         return render_template('Korpus_TagCloud.html', img_KORPUS=img_KORPUS)
-    return render_template('Korpus_TagCloud.html')
+    return render_template('Korpus_TagCloud.html'), subprocess.call('./delete_KORPUS.sh', shell=True)
 
 if __name__ == '__main__':
     app.run(port=1337, debug=True)
